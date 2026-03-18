@@ -1,0 +1,38 @@
+conditional_markers:
+  - if
+  - then
+  - after
+  - because
+  - otherwise
+  - so that
+  - therefore
+  - hence
+tactical_keywords:
+  - fork
+  - pin
+  - skewer
+  - opposition
+  - zugzwang
+  - promotion
+  - passed pawn
+  - tempo
+  - triangulation
+  - blockade
+  - mating net
+  - pawn race
+generic_phrases:
+  - improve position
+  - gain advantage
+  - support the pawn
+  - control key squares
+  - centralize
+  - restrict the king
+  - maintain control
+weights:
+  square_mentions: 2.0
+  move_mentions: 1.5
+  conditional_markers: 1.5
+  tactical_keywords: 1.0
+  line_depth: 1.5
+  generic_phrase_count: 1.0
+normalize_by_length: true

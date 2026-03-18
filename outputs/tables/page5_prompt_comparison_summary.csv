@@ -1,0 +1,3 @@
+prompt_condition,n,llm_legal_rate,llm_exact_match_rate,llm_avg_delta_cp,avg_explanation_words
+calc,6,0.6666666666666666,0.0,442.25,135.16666666666666
+teaching,6,1.0,0.0,412.0,136.33333333333334

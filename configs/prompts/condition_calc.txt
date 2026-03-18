@@ -1,0 +1,5 @@
+Given this chess position (FEN):
+{fen}
+
+Solve the puzzle. Explain your reasoning step by step and include possible opponent responses.
+Return the move in UCI format on the first line, then the explanation.

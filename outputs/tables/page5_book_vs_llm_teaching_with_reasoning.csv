@@ -1,0 +1,24 @@
+puzzle_id,book_move,book_delta_cp,llm_move,llm_delta_cp,llm_correct,llm_legal,llm_explanation
+livshitz_1988_p005_01,d1c2,-108,,,,,"d1-c2
+
+In this position, the best move is to bring your king closer to the pawn to help it advance safely. Moving the king from d1 to c2 is a good step because it moves your king closer to the pawn on c3. The idea is to support the pawn as it moves forward, eventually trying to promote it to a queen. The black king is far away on f8, so you have time to help your pawn. Always remember, in endgames like this, the king is very important for protecting your pawns and helping them reach the other side of the board."
+livshitz_1988_p005_02,c6d5,-182,c6c7,177.0,False,True,"In this position, your white king is very close to promoting a pawn. The key idea is to move your pawn from c6 to c7. This is important because the pawn is just one step away from becoming a queen, which is the most powerful piece in chess.
+By moving c6 to c7, you threaten to promote the pawn on your next move. The black king on e2 is too far away to stop the pawn from promoting, and the black pawn on h7 is not a threat right now. Your king on c6 supports the pawn, so black cannot capture it easily.
+The key squares here are c7 (where your pawn will move) and c8 (where it will promote). Once your pawn reaches c8 and becomes a queen, you will have a big advantage and should be able to win the game."
+livshitz_1988_p005_03,g8f7,-2,e2e4,658.0,False,True,"In this position, you have a pawn on e2 that can move forward to e4. This is the best move because it helps you control the center of the board, which is very important in chess. Controlling the center gives your king more space to move and can limit your opponent's king activity. Also, by pushing the pawn forward, you prepare to advance it further and possibly promote it to a queen later, which can help you win the game. The black king is far away on d7 and cannot stop your pawn easily, so pushing e4 is a strong and simple plan."
+livshitz_1988_p005_04,h2h4,-4,h2h3,495.0,False,True,"In this position, you are White and it's your turn to move. The best move is to play **h2h3**.
+Here's why:
+- Your pawn on h2 is ready to move forward, and pushing it to h3 helps you create space for your king.
+- The Black king is on e6, and the Black pawn is on a6, far away from your side of the board.
+- By moving your pawn to h3, you prevent the Black king from coming closer to your king and pawns on the kingside.
+- This move also prepares your king to move safely around the back rank (like moving to h2 or g2 later), helping you protect your pawns and eventually try to promote one.
+- In endgames like this, controlling key squares and keeping your king safe is very important.
+So, **h2h3** is a simple, safe move that helps you keep control and improve your position step by step."
+livshitz_1988_p005_05,b4b3,-5,b2b3,368.0,False,True,"In this position, you want to stop the black king from getting closer to your pawns and taking them. The black king is on d4, and your king is on b4. Your pawn on b2 is important because it can help you control the c3 and a3 squares, which are key squares to keep the black king away.
+By moving your pawn from b2 to b3, you create a barrier that the black king cannot easily cross. This move helps protect your king and pawns, and it gives you a better chance to keep your pawns safe and eventually promote one to a queen.
+Remember, in endgames like this, controlling key squares and stopping the opponent's king from invading your position is very important!"
+livshitz_1988_p005_06,c7d6,-57,f2f3,362.0,False,True,"In this position, you are White and it's your turn to move. Your king is on c7, and Black's king is on a2. You also have a pawn on f2, and Black has a pawn on b7.
+The best move here is to push your pawn forward from f2 to f3. Why? Because your goal is to promote your pawn to a queen, which is the most powerful piece. But first, you need to make sure your pawn is safe and can move forward.
+By playing f3, you protect your pawn and prepare to push it further. Your king on c7 is already close to the Black pawn on b7, which means you can try to capture it soon. If you can take that pawn, you will have a clear path to promote your own pawn.
+Also, Black's king is far away on a2, so it will take time for Black to stop your pawn. By moving f3, you keep control and improve your chances to win.
+So, the move f2f3 helps you protect your pawn and get ready to promote it, which is the main idea in this endgame."

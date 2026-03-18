@@ -1,0 +1,5 @@
+Given this chess position (FEN):
+{fen}
+
+List 2-3 candidate moves, reject weaker ones, then choose the best move and explain why.
+Return the final move in UCI format on the first line, then the explanation.

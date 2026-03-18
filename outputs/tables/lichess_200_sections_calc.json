@@ -1,0 +1,50 @@
+{
+  "bishop_endings": {
+    "total": 14,
+    "legal_rate": 0.14285714285714285,
+    "exact_match_rate": 0.0,
+    "avg_engine_delta_cp": -14
+  },
+  "queen_rook_endings": {
+    "total": 65,
+    "legal_rate": 0.4307692307692308,
+    "exact_match_rate": 0.046153846153846156,
+    "avg_engine_delta_cp": 25371.928571428572
+  },
+  "rook_endings": {
+    "total": 56,
+    "legal_rate": 0.39285714285714285,
+    "exact_match_rate": 0.08928571428571429,
+    "avg_engine_delta_cp": 4776.136363636364
+  },
+  "bishop_vs_knight_endings": {
+    "total": 7,
+    "legal_rate": 0.2857142857142857,
+    "exact_match_rate": 0.0,
+    "avg_engine_delta_cp": 275.5
+  },
+  "queen_endings": {
+    "total": 7,
+    "legal_rate": 0.7142857142857143,
+    "exact_match_rate": 0.2857142857142857,
+    "avg_engine_delta_cp": 20408.6
+  },
+  "pawn_endings": {
+    "total": 40,
+    "legal_rate": 0.375,
+    "exact_match_rate": 0.05,
+    "avg_engine_delta_cp": 352.53333333333336
+  },
+  "knight_endings": {
+    "total": 10,
+    "legal_rate": 0.8,
+    "exact_match_rate": 0.1,
+    "avg_engine_delta_cp": 12786.5
+  },
+  "bishop_vs_pawns": {
+    "total": 1,
+    "legal_rate": 1.0,
+    "exact_match_rate": 1.0,
+    "avg_engine_delta_cp": 597
+  }
+}

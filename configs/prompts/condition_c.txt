@@ -1,0 +1,5 @@
+Given this chess position (FEN):
+{fen}
+
+Analyze threats, king safety, tactical motifs, and forcing lines before choosing the best move.
+Return the final move in UCI format on the first line, then the explanation.

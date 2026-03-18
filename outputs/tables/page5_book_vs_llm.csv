@@ -1,0 +1,7 @@
+puzzle_id,book_move,book_delta_cp,llm_move,llm_delta_cp,llm_correct,llm_legal
+livshitz_1988_p005_01,d1c2,-108,d1c2,-108,True,True
+livshitz_1988_p005_02,c6d5,-182,c6c7,147,False,True
+livshitz_1988_p005_03,g8f7,-2,e2e4,684,False,True
+livshitz_1988_p005_04,h2h4,-4,h2h4,0,True,True
+livshitz_1988_p005_05,b4b3,-5,b2b3,386,False,True
+livshitz_1988_p005_06,c7d6,-57,f2f3,302,False,True

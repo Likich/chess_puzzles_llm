@@ -1,0 +1,5 @@
+Given this chess position (FEN):
+{fen}
+
+Choose the best move and explain briefly why.
+Return the move in UCI format on the first line, then the explanation.

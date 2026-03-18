@@ -1,0 +1,5 @@
+Given this chess position (FEN):
+{fen}
+
+The best move is: {best_move}
+Explain why this move is best. Do not output any other move.
