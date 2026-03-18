@@ -9,6 +9,8 @@ __pycache__/
 .venv/
 venv/
 env/
+src/*.egg-info/
+src/**/*.egg-info/
 
 # Data artifacts (large)
 data/raw/
@@ -20,3 +22,6 @@ outputs/logs/
 
 # Local secrets
 .env
+
+# Paper (LaTeX)
+paper/
