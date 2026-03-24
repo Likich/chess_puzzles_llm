@@ -6,6 +6,8 @@ import chess
 import chess.engine
 
 from chess_reasoning.utils.logging import get_logger
+from chess_reasoning.evaluation.move_quality import exact_best_move, is_legal_move
+from chess_reasoning.parsing.moves import parse_move_from_text
 
 logger = get_logger(__name__)
 
@@ -40,6 +42,15 @@ def eval_generations_with_stockfish(
 
             move_score = None
             move_uci = gen.get("parsed_move") or gen.get("chosen_move") or gen.get("move_uci")
+            if not move_uci:
+                text = gen.get("parsed_explanation") or gen.get("raw_response") or ""
+                move_uci = parse_move_from_text(fen, text)
+                if move_uci:
+                    gen["parsed_move"] = move_uci
+                    gen["legal_move"] = is_legal_move(fen, move_uci)
+                    best_move = puzzle.get("best_move")
+                    if best_move and gen.get("legal_move") is True:
+                        gen["correct_move"] = exact_best_move(best_move, move_uci)
             if move_uci:
                 try:
                     move = chess.Move.from_uci(move_uci)

@@ -133,6 +133,22 @@ chess-reasoning generate-openai \
   --sleep-s 0.2
 ```
 
+8c) Generate LLM explanations with a Groq-hosted open-weights model (OpenAI-compatible chat):
+```
+export GROQ_API_KEY=your_key_here
+chess-reasoning generate-openai \
+  --puzzles data/processed/puzzles_500_2000_1000.jsonl \
+  --prompt configs/prompts/condition_a.txt \
+  --output data/processed/llm_generations_groq.jsonl \
+  --model llama-3.1-70b-instruct \
+  --temperature 0.0 \
+  --max-output-tokens 256 \
+  --prompt-condition brief \
+  --api-type chat \
+  --base-url https://api.groq.com/openai/v1/chat/completions \
+  --api-key-env GROQ_API_KEY
+```
+
 8b) Generate LLM explanations with a local Hugging Face model:
 ```
 chess-reasoning generate-hf \

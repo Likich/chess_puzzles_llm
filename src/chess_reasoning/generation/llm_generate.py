@@ -27,6 +27,9 @@ def generate_openai_rows(
     api_type: str = "responses",
     base_url: Optional[str] = None,
     api_key_env: str = "OPENAI_API_KEY",
+    reasoning_effort: Optional[str] = None,
+    reasoning_format: Optional[str] = None,
+    include_reasoning: Optional[bool] = None,
 ) -> Iterator[dict]:
     count = 0
     for puzzle in puzzles:
@@ -51,6 +54,9 @@ def generate_openai_rows(
                 sleep_s=sleep_s,
                 base_url=base_url or "https://api.openai.com/v1/chat/completions",
                 api_key_env=api_key_env,
+                reasoning_effort=reasoning_effort,
+                reasoning_format=reasoning_format,
+                include_reasoning=include_reasoning,
             )
         else:
             response = create_response(
@@ -62,6 +68,9 @@ def generate_openai_rows(
                 sleep_s=sleep_s,
                 base_url=base_url or "https://api.openai.com/v1/responses",
                 api_key_env=api_key_env,
+                reasoning_effort=reasoning_effort,
+                reasoning_format=reasoning_format,
+                include_reasoning=include_reasoning,
             )
         latency_ms = int((time.time() - start) * 1000)
 

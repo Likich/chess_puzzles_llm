@@ -190,6 +190,12 @@ def cmd_generate_openai(args: argparse.Namespace) -> None:
         sleep_s=args.sleep_s,
         max_retries=args.max_retries,
         limit=args.limit,
+        api_type=args.api_type,
+        base_url=args.base_url,
+        api_key_env=args.api_key_env,
+        reasoning_effort=args.reasoning_effort,
+        reasoning_format=args.reasoning_format,
+        include_reasoning=args.include_reasoning,
     )
     if args.append:
         append_jsonl(args.output, rows)
@@ -467,6 +473,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_gen.add_argument("--temperature", type=float, default=0.0)
     p_gen.add_argument("--max-output-tokens", type=int, default=256)
     p_gen.add_argument("--prompt-condition", default=None, help="Label for prompt condition")
+    p_gen.add_argument("--api-type", default="responses", choices=["responses", "chat"])
+    p_gen.add_argument("--base-url", default=None, help="Override API base URL")
+    p_gen.add_argument("--api-key-env", default="OPENAI_API_KEY", help="API key env var name")
+    p_gen.add_argument("--reasoning-effort", default=None, help="Reasoning effort (model-specific)")
+    p_gen.add_argument("--reasoning-format", default=None, help="Reasoning format: hidden, raw, parsed")
+    p_gen.add_argument("--include-reasoning", action="store_true", default=None, help="Include reasoning field")
     p_gen.add_argument("--sleep-s", type=float, default=0.0)
     p_gen.add_argument("--max-retries", type=int, default=3)
     p_gen.add_argument("--limit", type=int, default=None)

@@ -37,8 +37,11 @@ def extract_output_text(response_json: dict[str, Any]) -> str | None:
         msg = choices[0].get("message") if isinstance(choices[0], dict) else None
         if isinstance(msg, dict):
             content = msg.get("content")
-            if isinstance(content, str):
+            if isinstance(content, str) and content:
                 return content
+            reasoning = msg.get("reasoning")
+            if isinstance(reasoning, str) and reasoning:
+                return reasoning
     return None
 
 
@@ -53,6 +56,9 @@ def create_response(
     timeout_s: int = 60,
     max_retries: int = 3,
     sleep_s: float = 0.0,
+    reasoning_effort: Optional[str] = None,
+    reasoning_format: Optional[str] = None,
+    include_reasoning: Optional[bool] = None,
 ) -> dict[str, Any]:
     api_key = api_key or os.getenv(api_key_env)
     if not api_key:
@@ -63,12 +69,20 @@ def create_response(
         "Content-Type": "application/json",
     }
 
-    payload = {
+    payload: dict[str, Any] = {
         "model": model,
         "input": prompt,
         "temperature": temperature,
         "max_output_tokens": max_output_tokens,
     }
+    if reasoning_effort is not None:
+        payload["reasoning_effort"] = reasoning_effort
+    if reasoning_format is not None and include_reasoning is not None:
+        raise RuntimeError("reasoning_format and include_reasoning are mutually exclusive")
+    if reasoning_format is not None:
+        payload["reasoning_format"] = reasoning_format
+    if include_reasoning is not None:
+        payload["include_reasoning"] = include_reasoning
 
     last_err: Optional[Exception] = None
     for attempt in range(max_retries + 1):
@@ -108,6 +122,9 @@ def create_chat_completion(
     timeout_s: int = 60,
     max_retries: int = 3,
     sleep_s: float = 0.0,
+    reasoning_effort: Optional[str] = None,
+    reasoning_format: Optional[str] = None,
+    include_reasoning: Optional[bool] = None,
 ) -> dict[str, Any]:
     api_key = api_key or os.getenv(api_key_env)
     if not api_key:
@@ -118,12 +135,20 @@ def create_chat_completion(
         "Content-Type": "application/json",
     }
 
-    payload = {
+    payload: dict[str, Any] = {
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": temperature,
         "max_tokens": max_output_tokens,
     }
+    if reasoning_effort is not None:
+        payload["reasoning_effort"] = reasoning_effort
+    if reasoning_format is not None and include_reasoning is not None:
+        raise RuntimeError("reasoning_format and include_reasoning are mutually exclusive")
+    if reasoning_format is not None:
+        payload["reasoning_format"] = reasoning_format
+    if include_reasoning is not None:
+        payload["include_reasoning"] = include_reasoning
 
     last_err: Optional[Exception] = None
     for attempt in range(max_retries + 1):
