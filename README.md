@@ -133,6 +133,17 @@ chess-reasoning generate-openai \
   --sleep-s 0.2
 ```
 
+8b) Generate LLM explanations with a local Hugging Face model:
+```
+chess-reasoning generate-hf \
+  --puzzles data/processed/puzzles_500_2000_1000.jsonl \
+  --prompt configs/prompts/condition_a.txt \
+  --output data/processed/llm_generations_hf.jsonl \
+  --model Likich/qwen2p5-7b-chess-sft \
+  --device auto \
+  --max-output-tokens 256
+```
+
 9) Ingest book positions (manual CSV) and analyze by section:
 ```
 chess-reasoning ingest-book \

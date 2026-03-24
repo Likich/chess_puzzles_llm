@@ -1,0 +1,5 @@
+prompt_condition,n,recoverable_strict,recoverable_light,delta_light_minus_strict
+overall,588,0.349,0.357,0.008
+brief,194,0.333,0.341,0.007
+calc,195,0.333,0.356,0.023
+teaching,199,0.378,0.373,-0.004

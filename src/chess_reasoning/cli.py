@@ -32,6 +32,7 @@ from chess_reasoning.analysis.recoverability import evaluate_recoverability
 from chess_reasoning.ingestion.sample import iter_filtered_puzzles, reservoir_sample
 from chess_reasoning.utils.io import append_jsonl
 from chess_reasoning.generation.llm_generate import generate_openai_rows
+from chess_reasoning.generation.hf_generate import generate_hf_rows
 from chess_reasoning.generation.prompts import load_prompt
 from chess_reasoning.generation.book_baseline import book_solution_rows
 from chess_reasoning.ingestion.book import iter_book_positions, iter_book_positions_sheet
@@ -195,6 +196,35 @@ def cmd_generate_openai(args: argparse.Namespace) -> None:
     else:
         write_jsonl(args.output, rows)
     logger.info("Wrote generations to %s", args.output)
+
+
+def cmd_generate_hf(args: argparse.Namespace) -> None:
+    prompt_template = load_prompt(args.prompt)
+    prompt_condition = args.prompt_condition or Path(args.prompt).stem
+    puzzles = iter_filtered_puzzles(
+        input_path=args.puzzles,
+        min_rating=args.min_rating,
+        max_rating=args.max_rating,
+        split=args.split,
+    )
+    rows = generate_hf_rows(
+        puzzles=puzzles,
+        prompt_template=prompt_template,
+        model_id=args.model,
+        temperature=args.temperature,
+        top_p=args.top_p,
+        max_output_tokens=args.max_output_tokens,
+        prompt_condition=prompt_condition,
+        device=args.device,
+        dtype=args.dtype,
+        trust_remote_code=args.trust_remote_code,
+        limit=args.limit,
+    )
+    if args.append:
+        append_jsonl(args.output, rows)
+    else:
+        write_jsonl(args.output, rows)
+    logger.info("Wrote HF generations to %s", args.output)
 
 
 def cmd_book_generations(args: argparse.Namespace) -> None:
@@ -445,6 +475,25 @@ def build_parser() -> argparse.ArgumentParser:
     p_gen.add_argument("--max-rating", type=int, default=None)
     p_gen.add_argument("--split", default=None, choices=["train", "dev", "test"])
     p_gen.set_defaults(func=cmd_generate_openai)
+
+    p_hf = sub.add_parser("generate-hf", help="Generate LLM moves + explanations via Hugging Face model")
+    p_hf.add_argument("--puzzles", required=True, help="Puzzles JSONL")
+    p_hf.add_argument("--prompt", required=True, help="Prompt template file")
+    p_hf.add_argument("--output", required=True, help="Output JSONL")
+    p_hf.add_argument("--model", required=True, help="HF model id, e.g., Likich/qwen2p5-7b-chess-sft")
+    p_hf.add_argument("--temperature", type=float, default=0.0)
+    p_hf.add_argument("--top-p", type=float, default=1.0)
+    p_hf.add_argument("--max-output-tokens", type=int, default=256)
+    p_hf.add_argument("--prompt-condition", default=None, help="Label for prompt condition")
+    p_hf.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda", "mps"])
+    p_hf.add_argument("--dtype", default="auto", choices=["auto", "float16", "bfloat16", "float32"])
+    p_hf.add_argument("--trust-remote-code", action="store_true")
+    p_hf.add_argument("--limit", type=int, default=None)
+    p_hf.add_argument("--append", action="store_true")
+    p_hf.add_argument("--min-rating", type=int, default=None)
+    p_hf.add_argument("--max-rating", type=int, default=None)
+    p_hf.add_argument("--split", default=None, choices=["train", "dev", "test"])
+    p_hf.set_defaults(func=cmd_generate_hf)
 
     p_book_gen = sub.add_parser("make-book-generations", help="Create generations from book best moves")
     p_book_gen.add_argument("--puzzles", required=True, help="Puzzles JSONL")

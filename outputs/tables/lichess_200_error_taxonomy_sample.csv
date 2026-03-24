@@ -1,0 +1,157 @@
+puzzle_id,section,prompt_condition,move_uci,legal_move,engine_delta_cp,specificity_score_norm,reasoning_text,predicted_move,recoverable_exact,error_label,notes
+rKgYv,pawn_endings,brief,h5h6,False,,0.12244897959183673,"White should play h6 to create a passed pawn and threaten to promote. This move forces Black into a defensive position, as capturing the pawn would open lines for White's king and pawns to advance further. White's active king and advanced pawns give a winning advantage in the endgame.",e5e6,False,,
+b5fDe,pawn_endings,brief,e7e6,False,,0.17391304347826086,"Black should play e7e6 to challenge White's strong pawn on d5 and open lines for the king and potentially the bishop. This move helps Black to undermine White's central control and create counterplay, as the position is quite closed and Black needs to activate their pieces.",c5c4,False,,
+ONtMr,queen_rook_endings,brief,d4c4,False,,0.2826086956521739,"Black plays ...d4c4 to capture the pawn on c4, gaining material and opening lines for the rook on c6. This move also threatens to increase pressure on White's queenside and limits White's pawn structure and mobility. It is a strong, active move that improves Black's position.",d4a1,False,,
+nLvyu,bishop_endings,brief,e2c4,False,,0.2653061224489796,"The best move is Be2-c4, attacking the black bishop on d5 and gaining control of important central squares. This move also helps White to activate the bishop and potentially create threats against Black's pawn structure and king position. It improves White's piece activity and puts pressure on Black's position.",e2d3,False,,
+khTtu,knight_endings,brief,c5c6,False,,0.32653061224489793,"The best move is to push the knight from c5 to c6, attacking the black pawn on b4 and threatening to create a passed pawn on the queenside. This move also increases White's control over key squares and limits Black's pawn advances, improving White's winning chances in the endgame.",c5d7,False,,
+NHJ7m,queen_rook_endings,brief,c2c1,True,657.0,0.0,"Black promotes the pawn to a queen with check, gaining a decisive material advantage and forcing White's king into a vulnerable position. This move also threatens immediate mate or significant material loss for White.",c2c1q,False,,
+5Zepl,queen_rook_endings,brief,c1c8,True,-156.0,0.2604166666666667,"The best move is Qc1-c8+, delivering a check that forces Black's king to move or block. This move exploits the pin on the g7 pawn and threatens to win material or deliver a decisive attack, as Black's king is exposed and Black's pieces are poorly coordinated to defend.",c1c3,False,,
+3Y23P,pawn_endings,brief,d6c7,True,206.0,0.13157894736842105,"Black should play d6c7 to advance the passed pawn closer to promotion. This move puts immediate pressure on White to stop the pawn, potentially tying down White's king and pieces, and increasing Black's winning chances in this endgame.",a5a4,False,,
+PB5dV,rook_endings,brief,h7h8q,False,,0.0,"Promoting the pawn to a queen delivers a check and gains a decisive material advantage. Black's king is trapped and cannot escape the check, leading to a winning position for White.",e5e6q,False,,
+xADUV,queen_endings,brief,f6f3,True,693.0,0.18478260869565216,"Black plays ...f3 to open lines and create threats against White's king. This move attacks the pawn on g2 and aims to undermine White's pawn structure around the king, increasing Black's attacking chances. It also opens the f-file for potential rook activity and creates tactical opportunities.",f5f4,False,,
+bKS8S,queen_rook_endings,calc,d6d4,False,,0.21808510638297873,"Black plays ...d4, attacking the White queen on d4 and gaining space in the center. This move forces White to respond to the threat on the queen, disrupting White's coordination.
+Step-by-step reasoning:
+1. Black's queen on c6 and rook on e8 are well placed to support central and kingside activity.
+2. White's queen on d4 is somewhat centralized but vulnerable to attacks.
+3. By pushing the pawn from d6 to d4, Black attacks the queen directly, forcing White to move it.
+4. If White moves the queen away, Black can consider increasing pressure on the kingside or centralizing the rook.
+5. This move also opens lines for Black's pieces and can lead to tactical opportunities.
+Possible White responses:
+- Qxd4: White captures the pawn, but this may allow Black to activate the rook or queen with tempo.
+- Qc4 or Qb4: Retreating the queen to a safe square, but Black gains space and can continue to press.
+- cxd4: If White captures with the c-pawn, Black can recapture with the queen or rook, maintaining pressure.
+Overall, ...d4 is a strong move that challenges White's queen and improves Black's",f5f4,False,,
+xADUV,queen_endings,calc,g7g6,False,,0.35060975609756095,"Black plays ...g6 to block the dangerous diagonal and prevent White's queen from infiltrating further.
+Step-by-step reasoning:
+1. White's queen on d5 is very active, threatening multiple checks and attacks.
+2. White's king on e4 is centralized and can support an attack.
+3. Black's king on g7 is somewhat exposed, and Black needs to create luft and reduce White's attacking chances.
+4. By playing ...g6, Black stops White's queen from moving to squares like f7 or e5 with check.
+5. If Black does not play ...g6, White can consider moves like Qd7+ or Qe5+ to increase pressure.
+6. After ...g6, Black can try to consolidate and defend the kingside.
+Possible opponent responses:
+- White might try Qd7+ Kg8, then Qe8+ Kg7, but Black can keep defending.
+- White could try Kf5 to bring the king closer, but Black can respond with moves like Qf7 to exchange queens or defend.
+Overall, ...g6 is a key defensive move to stop immediate threats and improve Black's position.",f6f5,False,,
+GKpUv,queen_rook_endings,calc,b4a4,True,583.0,0.2515923566878981,"Black plays **b4a4**, capturing the white rook on a4.
+Explanation:
+- Black is currently down material and under pressure, but the immediate threat from White is the queen on f6 targeting the weak d6 pawn and the king's position.
+- White's queen on f6 is very active, and White threatens to increase pressure on Black's king.
+- By playing **b4a4**, Black captures the rook on a4, gaining material and removing a key attacking piece.
+- After **b4a4**, White must respond to the loss of the rook and cannot immediately continue with aggressive threats without losing material.
+- For example, if White tries to capture the pawn on d6 with the queen (Qxd6+), Black can respond with Kg8, escaping checks and maintaining material advantage.
+- Black's pawn structure and active queen on b4 help to keep White's king under pressure.
+This move is the best practical chance for Black to equalize or gain material advantage in this position.",b4c1,False,,
+yGzHN,knight_endings,calc,e2c3,True,99999.0,0.20353982300884957,"White plays Nxc3+, capturing the knight and giving a check to the black king. This forces Black to respond to the check immediately.
+Possible Black responses:
+- Kb6: The king moves to b6, escaping the check.
+- Kd6: The king moves to d6, also escaping the check.
+After Nxc3+, White has removed a strong Black piece (the knight) and gained a tempo by checking the king. This improves White's position significantly, as Black's king is forced to move, and White can then proceed to advance the pawn or improve the king's position.
+No other White move gives a check or captures a piece, so Nxc3+ is the best move here.
+UCI move: e2c3",e2f4,False,,
+PNSQk,knight_endings,calc,g4g3,True,545.0,0.329608938547486,"Black plays ...g4-g3, attacking the white king and forcing it to move. White's king is currently on e7, and black's pawn on h5 supports the g4 pawn, making it difficult for white to hold the position.
+Step-by-step reasoning:
+1. Black plays ...g4-g3, threatening to advance the pawn further and potentially promote.
+2. White must respond to this threat. The white king is on e7, and the black knight on f8 controls important squares.
+3. If white tries to capture the pawn or move away, black can continue pushing the pawn or use the knight to support the advance.
+4. The black king on g4 supports the pawn advance and restricts the white king's movement.
+5. Black's plan is to promote the pawn or force white into a losing position by zugzwang or material loss.
+Possible white responses:
+- White king moves to d6 or f6 to try to approach the pawn.
+- White tries to capture the pawn if possible, but currently, the pawn is protected.
+Overall, ...g4-g3 is the best move to continue black's winning plan.
+Answer:
+g4g3",g5g4,False,,
+cV9av,rook_endings,calc,g4g5,True,392.0,0.33121019108280253,"Black plays 43...g5, attacking the White rook on f6 and trying to gain activity.
+Step-by-step reasoning:
+1. Black is down material but has an active rook on g4 and a pawn majority on the kingside.
+2. The White rook on f7 and the king on e5 are very active, but the rook on f6 is under attack.
+3. By playing 43...g5, Black forces White to respond to the threat on the rook.
+4. If White moves the rook away, Black can try to activate the king or push pawns to create counterplay.
+5. If White captures on g5 (Rxf5), Black can recapture with the king or rook, maintaining pressure.
+Possible opponent responses:
+- 44. Rf5 (saving the rook and attacking the g5 pawn)
+- 44. Rg7 (moving the rook to a safer square)
+- 44. Rxg4 (capturing the rook on g4)
+Black's move 43...g5 is the best practical try to create counterplay and challenge White's active pieces.",g4f4,False,,
+nU0Rx,queen_endings,calc,e3e6,True,100132.0,0.32831325301204817,"White plays **Qe3 to e6+**, delivering a check.
+**Reasoning:**
+1. **Qe6+** forces Black's king to move or block the check.
+2. Black's king has no safe squares to move to:
+- The f8 and h8 squares are controlled by White's queen and pawns.
+- The g8 square is occupied by the Black king itself.
+3. Black cannot block the check effectively:
+- The pawn on f7 cannot move to block.
+- The queen on d5 cannot interpose without being captured.
+4. After **Qe6+**, Black's king is forced to move to h8.
+5. White can then play **c6**, pushing the pawn to c6, threatening to promote or win material.
+6. Black is in a losing position due to the exposed king and White's active pieces.
+**Possible opponent responses:**
+- If Black plays **Kh8**, White continues with **c6**, gaining a decisive advantage.
+- If Black tries to block with **Qxe6**, White captures back with **dxe6**, opening lines and maintaining a winning position.
+Thus, the best move is:
+**e3e6**",c5c6,False,,
+MAncS,queen_rook_endings,calc,d4d5,False,,0.28160919540229884,"White plays 39. d5, pushing the pawn to attack Black's pawn on d6 and opening lines.
+Explanation:
+1. The pawn push d5 attacks the d6 pawn, threatening to open the d-file and create passed pawns.
+2. If Black captures with exd5, White can respond with Rxf5, attacking the f5 pawn and increasing pressure.
+3. Black's queen on g3 is active but somewhat limited in scope; White's move aims to open the position where White's rook and queen can become more active.
+4. Black's king is somewhat exposed on g7, and opening the d-file can create tactical opportunities for White.
+5. If Black tries to ignore the pawn push, White can continue to increase pressure on the center and Black's weak pawns.
+Possible Black responses:
+- 39... exd5: White plays 40. Rxf5, attacking the f5 pawn and threatening to infiltrate.
+- 39... Qxg2+: Black tries to check, but after 40. Rxg2+ Kf6, White has time to consolidate and continue the attack.
+- 39... Kh7: Black tries to improve king safety, but White can continue with",d5d6,False,,
+UfPl5,pawn_endings,calc,e3e4,True,460.0,0.37407407407407406,"White plays e4, attacking the black pawn on a5 and preparing to advance the king.
+Explanation:
+1. White's main goal is to stop Black's passed a-pawn from promoting. The black pawn on a5 is very close to promotion, so White must act quickly.
+2. By playing e4, White prepares to bring the king closer to the queenside to capture the a5 pawn.
+3. Black's best response is to push the h-pawn (h5 or h4) to create counterplay or try to distract White's king.
+4. After e4, White can follow up with Kd4 or Kd3 to approach the a5 pawn.
+5. If Black tries to push the a-pawn immediately (a4), White can capture it with the king after advancing.
+This move starts White's plan to stop the passed pawn and activate the king for the endgame.",e3d4,False,,
+QwfQg,queen_rook_endings,calc,d2d5,False,,0.2951388888888889,"White plays the move Re2d5, attacking Black's queen on c5 and gaining a strong central position.
+Step-by-step reasoning:
+1. White's rook on e2 moves to d5, directly attacking the Black queen on c5.
+2. Black must respond to the threat to the queen. The queen has limited safe squares:
+- Moving to b6 or b4 is possible but less active.
+- Moving to c3 or c4 is risky due to White's pawn and rook control.
+3. If Black tries to exchange queens by Qxd5, White recaptures with cxd5, gaining a strong passed pawn in the center.
+4. If Black moves the queen away, White gains time and can improve their position, possibly pushing the d-pawn further or activating the other rook.
+This move puts immediate pressure on Black and improves White's control of the center, increasing White's chances in the position.
+UCI move: d2d5",e2e8,False,,
+nJvGB,rook_endings,teaching,f4f5,False,,0.19607843137254902,"This move puts the Black king in check, forcing it to move. When you check your opponent's king, you gain control of the game because they must respond to the threat immediately. Here, by playing f4 to f5+, you attack the Black king on g6, making it move away from its safe squares. This can help you gain space and improve your position. Also, pushing the pawn forward opens lines for your rook on f4 to become more active later. Always look for moves that put your opponent's king in check or threaten important pieces, as these moves give you the initiative.",f4f6,False,,
+vprZK,rook_endings,teaching,f5f2,True,99933.0,0.12890625,"In this position, Black can play the move Rf2. This is a very strong move because it attacks White's king directly and threatens to win material. The key idea is that Black's rook on f2 is very active and close to White's king, putting a lot of pressure on White's position.
+By moving the rook to f2, Black forces White to respond carefully because the rook is attacking important squares near the king. This move also supports Black's other rook on e8, which controls the open e-file, a very important line in chess.
+In simple terms, Black is using the rooks to attack White's king and create threats that White must deal with immediately. This puts Black in a better position to win material or even checkmate later.",f5f1,False,,
+CIW0X,rook_endings,teaching,b7b6,False,,0.24691358024691357,"In this position, Black should play **b7b6**. This move is important because it attacks the White rook on b5, forcing it to move. The rook on b5 is very active and controls important squares, so pushing it away helps Black gain more control. Also, by playing b6, Black prepares to bring the rook on b6 into a better position to defend and possibly attack later. The key idea is to challenge White's strong rook and improve Black's chances in the endgame.",b6b5,False,,
+khTtu,knight_endings,teaching,c4c5,False,,0.33055555555555555,"In this position, the best move is to push your knight pawn from c4 to c5. Here's why:
+1. **Attack the pawn on b4:** By moving c4 to c5, you threaten the black pawn on b4. If Black doesn't respond well, you can capture it and gain material.
+2. **Create space for your knight:** Your knight on c4 is strong because it controls important squares. By pushing c5, you limit Black's pawn moves and give your knight more freedom to move around.
+3. **Control key squares:** The c5 pawn helps control the d6 and b6 squares, which can be important for your knight or king to use later.
+4. **Prepare to advance your pawns:** You have a strong pawn on e4 and pushing c5 supports your plan to push pawns forward and create passed pawns (pawns that have no enemy pawns blocking their way to promotion).
+In simple terms, c5 is a good move because it attacks Black's pawns, helps your knight, and prepares your pawns to become stronger. This puts pressure on Black and improves your chances to win.",e4e5,False,,
+qddOZ,queen_endings,teaching,d4d3,True,506.0,0.1949685534591195,"In this position, Black should play d4d3. This move attacks the White queen on d3 and forces White to respond. By pushing the pawn forward, Black creates a strong passed pawn that is very close to promotion (turning into a queen). This puts a lot of pressure on White because if the pawn reaches the last rank, Black will get a new queen, which is a huge advantage.
+Key ideas:
+- The pawn on d3 is protected by Black's queen on d4, so White cannot easily capture it.
+- White's king is on d2 and the queen is on d3, so White must spend time dealing with this threat.
+- Creating a passed pawn (a pawn with no enemy pawns blocking its way) is very powerful in the endgame.
+- Black's move forces White to react, giving Black the initiative.
+So, d4d3 is the best move because it creates a strong threat and helps Black get closer to winning.",f4f3,False,,
+Lc4KS,rook_endings,teaching,b3b4,False,,0.21359223300970873,"In this position, the best move is to push the pawn from b3 to b4. This move is important because it attacks the black pawn on b5, which is protecting the black king and other pieces. By pushing b4, you try to open up the position and create weaknesses in Black's pawn structure. This can help your king and rook become more active and create chances to win material or checkmate. Also, pushing b4 helps control important squares on the queenside, making it harder for Black to defend. Always look for moves that challenge your opponent's pawns and improve your own piece activity!",e4e5,False,,
+SNEgV,queen_rook_endings,teaching,a4a3,True,800.0,0.14601769911504425,"In this position, Black plays a4a3 to attack White's queen on h5. The queen is very powerful because it controls many squares and puts pressure on Black's king side. By pushing the pawn to a3, Black forces White's queen to move away from its strong attacking position. This helps Black gain some space on the queenside and reduces White's attacking chances.
+Key idea: When your opponent has a strong piece like the queen in an active spot, try to challenge it or force it to move. This can give you time to improve your own position. Here, pushing the pawn to a3 attacks the queen and makes White decide where to go next.",a5a4,False,,
+ZZfl0,rook_endings,teaching,f2f1q,False,,0.30833333333333335,"In this position, Black can promote the pawn on f2 to a queen by moving it from f2 to f1 (f2f1q). This is the best move because getting a new queen is very powerful—it gives Black a strong piece that can move in many directions and helps to control the board.
+Key ideas:
+- The pawn on f2 is just one step away from becoming a queen.
+- Promoting the pawn puts immediate pressure on White.
+- White's king on b7 and rook on b6 are far from stopping the promotion.
+- After promotion, Black will have a big advantage and a better chance to win.
+So, pushing the pawn to f1 and promoting it is the strongest move here.",g2g1q,False,,
+ZHIgj,queen_rook_endings,teaching,h4h3,True,861.0,0.14919354838709678,"In this position, Black plays **h4h3**. This move is strong because it attacks White's king side directly. The pawn on h3 threatens to open lines near White's king, making it harder for White to stay safe.
+Key ideas:
+- Black's queen is already active on h4, putting pressure on White's king.
+- By pushing the pawn to h3, Black forces White to respond, often weakening White's pawn structure or king safety.
+- This move can lead to opening the h-file, which Black can use to bring more pieces into attack.
+For a beginner, remember: when your opponent's king is not well protected, try to open lines (like files or diagonals) to attack it. Here, pushing the pawn to h3 helps Black do exactly that.",h5h4,False,,
+0qHfo,rook_endings,teaching,a7a8q,False,,0.25471698113207547,"The best move is to promote the pawn on a7 to a queen by moving it from a7 to a8 (a7a8q). This is very powerful because you get a new queen, which is the strongest piece in chess. The new queen can attack many squares and help you win the game. Right now, your rook on a7 supports the pawn, so it’s safe to promote. After promotion, you will have a big advantage because your opponent will have to deal with the new queen and your other pieces attacking. This move puts a lot of pressure on your opponent and can lead to a quick win.",c4c5,False,,

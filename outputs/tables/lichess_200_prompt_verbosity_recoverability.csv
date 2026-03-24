@@ -1,0 +1,4 @@
+prompt_condition,n,legal_rate,exact_match_rate,avg_engine_delta_cp,avg_explanation_words,avg_specificity,recoverable_top1,recoverable_top3
+brief,200,0.552,0.082,11559.505,44.38,0.201,0.333,0.518
+calc,200,0.426,0.072,12364.241,146.09,0.321,0.333,0.462
+teaching,200,0.588,0.095,12304.291,117.4,0.205,0.378,0.503
