@@ -10,6 +10,8 @@ from difflib import SequenceMatcher
 
 from chess_reasoning.models.open_model_runner import OpenModelRunner
 from chess_reasoning.scoring.move_logprobs import build_prompt, iter_scored_moves
+from chess_reasoning.evaluation.masking import mask_explanation
+from chess_reasoning.analysis.recoverability import predict_moves
 from chess_reasoning.utils.io import read_jsonl, write_jsonl
 
 
@@ -67,6 +69,9 @@ def run_counterfactuals(
     load_in_4bit: bool = False,
     load_in_8bit: bool = False,
     bnb_4bit_compute_dtype: str | None = None,
+    recoverability_model: Optional[str] = None,
+    recoverability_max_tokens: int = 64,
+    recoverability_sleep_s: float = 0.0,
 ) -> None:
     runner = OpenModelRunner(
         model_name=model_name,
@@ -100,7 +105,6 @@ def run_counterfactuals(
             if is_original:
                 original_expl = explanation
 
-            # score book move rank using candidate scoring on this variant
             scored = list(
                 iter_scored_moves(
                     puzzles=[{"puzzle_id": pid, "fen": variant_fen, "best_move": book_move}],
@@ -116,10 +120,30 @@ def run_counterfactuals(
             )
             book_row = next((r for r in scored if r.get("candidate_move") == book_move), None)
             book_rank = book_row.get("rank_among_candidates") if book_row else None
+            topprob_move = None
+            if scored:
+                best = max(scored, key=lambda r: r.get("logprob_total", float("-inf")))
+                topprob_move = best.get("candidate_move")
 
             similarity = None
             if not is_original and original_expl is not None:
                 similarity = _text_similarity(original_expl, explanation)
+
+            predicted_move = None
+            recoverability_matches_generated = None
+            if recoverability_model:
+                masked = mask_explanation(explanation, level="strict")
+                preds = predict_moves(
+                    fen=variant_fen,
+                    explanation=masked,
+                    model=recoverability_model,
+                    top_k=1,
+                    max_output_tokens=recoverability_max_tokens,
+                    sleep_s=recoverability_sleep_s,
+                )
+                predicted_move = preds[0] if preds else None
+                if predicted_move:
+                    recoverability_matches_generated = predicted_move == generated_move
 
             rows.append(
                 {
@@ -128,12 +152,15 @@ def run_counterfactuals(
                     "is_original": is_original,
                     "fen": variant_fen,
                     "generated_move": generated_move,
-                    "topprob_move": None,
+                    "topprob_move": topprob_move,
                     "book_move_rank": book_rank,
                     "explanation_text": explanation,
                     "explanation_similarity_to_original": similarity,
-                    "recoverability": None,
+                    "recoverability_predicted_move": predicted_move,
+                    "recoverability_matches_generated": recoverability_matches_generated,
                     "engine_delta_cp": None,
+                    "prompt_style": prompt_style,
+                    "candidate_mode": candidate_mode,
                 }
             )
 
@@ -147,30 +174,52 @@ def summarize_counterfactuals(rows: Iterable[dict]) -> list[dict]:
     if not original or not variants:
         return []
 
-    deltas = []
+    change_counts = {
+        "generated_move_changed": 0,
+        "topprob_move_changed": 0,
+        "recoverability_predicted_move_changed": 0,
+        "recoverability_match_changed": 0,
+    }
+    total = 0
+    sims = []
+    rank_deltas = []
+
     for var in variants:
         pid = var.get("puzzle_id")
         orig = next((r for r in original if r.get("puzzle_id") == pid), None)
         if not orig:
             continue
-        delta_rank = None
+        total += 1
+        if orig.get("generated_move") != var.get("generated_move"):
+            change_counts["generated_move_changed"] += 1
+        if orig.get("topprob_move") != var.get("topprob_move"):
+            change_counts["topprob_move_changed"] += 1
+        if orig.get("recoverability_predicted_move") != var.get("recoverability_predicted_move"):
+            if orig.get("recoverability_predicted_move") is not None and var.get("recoverability_predicted_move") is not None:
+                change_counts["recoverability_predicted_move_changed"] += 1
+        if orig.get("recoverability_matches_generated") != var.get("recoverability_matches_generated"):
+            if orig.get("recoverability_matches_generated") is not None and var.get("recoverability_matches_generated") is not None:
+                change_counts["recoverability_match_changed"] += 1
+        if var.get("explanation_similarity_to_original") is not None:
+            sims.append(var.get("explanation_similarity_to_original"))
         if orig.get("book_move_rank") is not None and var.get("book_move_rank") is not None:
-            delta_rank = var.get("book_move_rank") - orig.get("book_move_rank")
-        delta_similarity = var.get("explanation_similarity_to_original")
-        deltas.append((delta_rank, delta_similarity))
+            rank_deltas.append(var.get("book_move_rank") - orig.get("book_move_rank"))
 
-    avg_rank = None
-    avg_sim = None
-    if deltas:
-        ranks = [d[0] for d in deltas if d[0] is not None]
-        sims = [d[1] for d in deltas if d[1] is not None]
-        avg_rank = sum(ranks) / len(ranks) if ranks else None
-        avg_sim = sum(sims) / len(sims) if sims else None
+    avg_sim = sum(sims) / len(sims) if sims else None
+    avg_rank_delta = sum(rank_deltas) / len(rank_deltas) if rank_deltas else None
 
-    return [
-        {"metric": "mean_delta_book_rank", "mean_delta_original_vs_variant": avg_rank},
+    summary = [
+        {"metric": "mean_delta_book_rank", "mean_delta_original_vs_variant": avg_rank_delta},
         {"metric": "mean_explanation_similarity", "mean_delta_original_vs_variant": avg_sim},
     ]
+    if total > 0:
+        summary.extend(
+            [
+                {"metric": k, "mean_delta_original_vs_variant": v / total}
+                for k, v in change_counts.items()
+            ]
+        )
+    return summary
 
 
 def write_csv(path: str | Path, rows: list[dict]) -> None:

@@ -35,6 +35,7 @@ from chess_reasoning.analysis.move_rank_analysis import aggregate_from_file, mov
 from chess_reasoning.analysis.explanation_alignment import build_alignment_table, summarize_alignment, write_csv as write_alignment_csv
 from chess_reasoning.analysis.counterfactual_sensitivity import run_counterfactuals, summarize_counterfactuals, write_csv as write_counterfactual_csv
 from chess_reasoning.analysis.logit_lens import logit_lens_bookmove
+from chess_reasoning.analysis.prob_recoverability import compute_prob_recoverability
 from chess_reasoning.ingestion.sample import iter_filtered_puzzles, reservoir_sample
 from chess_reasoning.utils.io import append_jsonl
 from chess_reasoning.generation.llm_generate import generate_openai_rows
@@ -412,6 +413,9 @@ def cmd_counterfactual_sensitivity(args: argparse.Namespace) -> None:
         load_in_4bit=args.load_in_4bit,
         load_in_8bit=args.load_in_8bit,
         bnb_4bit_compute_dtype=args.bnb_4bit_compute_dtype,
+        recoverability_model=args.recoverability_model,
+        recoverability_max_tokens=args.recoverability_max_tokens,
+        recoverability_sleep_s=args.recoverability_sleep_s,
     )
     rows = list(read_jsonl(args.output))
     summary = summarize_counterfactuals(rows)
@@ -434,6 +438,17 @@ def cmd_logit_lens_bookmove(args: argparse.Namespace) -> None:
         bnb_4bit_compute_dtype=args.bnb_4bit_compute_dtype,
     )
     logger.info("Wrote logit lens results to %s", args.output)
+
+
+def cmd_prob_recoverability(args: argparse.Namespace) -> None:
+    compute_prob_recoverability(
+        rank_path=args.rank,
+        recoverability_path=args.recoverability,
+        merged_output=args.merged_output,
+        rank_bucket_output=args.rank_bucket_output,
+        margin_bucket_output=args.margin_bucket_output,
+    )
+    logger.info("Wrote probability-recoverability tables to %s", args.output_dir)
 
 
 def cmd_label_endgames(args: argparse.Namespace) -> None:
@@ -725,6 +740,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_cf.add_argument("--load-in-4bit", action="store_true")
     p_cf.add_argument("--load-in-8bit", action="store_true")
     p_cf.add_argument("--bnb-4bit-compute-dtype", default=None, choices=[None, "float16", "bfloat16", "float32"])
+    p_cf.add_argument("--recoverability-model", default=None, help="Model name for recoverability decoder")
+    p_cf.add_argument("--recoverability-max-tokens", type=int, default=64)
+    p_cf.add_argument("--recoverability-sleep-s", type=float, default=0.0)
     p_cf.add_argument("--output", required=True, help="Output JSONL")
     p_cf.add_argument("--summary-output", default=None, help="Summary CSV output")
     p_cf.set_defaults(func=cmd_counterfactual_sensitivity)
@@ -741,6 +759,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_ll.add_argument("--bnb-4bit-compute-dtype", default=None, choices=[None, "float16", "bfloat16", "float32"])
     p_ll.add_argument("--output", required=True, help="Output JSONL")
     p_ll.set_defaults(func=cmd_logit_lens_bookmove)
+
+    p_pr = sub.add_parser("prob-recoverability", help="Link move probabilities to recoverability")
+    p_pr.add_argument("--rank", required=True, help="Per-puzzle move rank CSV")
+    p_pr.add_argument("--recoverability", required=True, help="Recoverability JSONL")
+    p_pr.add_argument("--merged-output", required=True, help="Merged per-puzzle CSV output")
+    p_pr.add_argument("--rank-bucket-output", required=True, help="Rank bucket summary CSV")
+    p_pr.add_argument("--margin-bucket-output", required=True, help="Margin bucket summary CSV")
+    p_pr.add_argument("--output-dir", default="outputs/tables", help="Output directory label for logs")
+    p_pr.set_defaults(func=cmd_prob_recoverability)
 
     p_end = sub.add_parser("label-endgames", help="Label Lichess puzzles by endgame section")
     p_end.add_argument("--input", required=True, help="Puzzles JSONL")
