@@ -362,6 +362,9 @@ def cmd_score_moves(args: argparse.Namespace) -> None:
         device_map=args.device_map,
         dtype=args.dtype,
         trust_remote_code=args.trust_remote_code,
+        load_in_4bit=args.load_in_4bit,
+        load_in_8bit=args.load_in_8bit,
+        bnb_4bit_compute_dtype=args.bnb_4bit_compute_dtype,
     )
     write_jsonl(args.output, rows)
     logger.info("Wrote move logprobs to %s", args.output)
@@ -406,6 +409,9 @@ def cmd_counterfactual_sensitivity(args: argparse.Namespace) -> None:
         limit=args.limit,
         device_map=args.device_map,
         dtype=args.dtype,
+        load_in_4bit=args.load_in_4bit,
+        load_in_8bit=args.load_in_8bit,
+        bnb_4bit_compute_dtype=args.bnb_4bit_compute_dtype,
     )
     rows = list(read_jsonl(args.output))
     summary = summarize_counterfactuals(rows)
@@ -423,6 +429,9 @@ def cmd_logit_lens_bookmove(args: argparse.Namespace) -> None:
         limit=args.limit,
         device_map=args.device_map,
         dtype=args.dtype,
+        load_in_4bit=args.load_in_4bit,
+        load_in_8bit=args.load_in_8bit,
+        bnb_4bit_compute_dtype=args.bnb_4bit_compute_dtype,
     )
     logger.info("Wrote logit lens results to %s", args.output)
 
@@ -681,6 +690,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_score.add_argument("--device-map", default="auto")
     p_score.add_argument("--dtype", default=None, choices=[None, "auto", "float16", "bfloat16", "float32"])
     p_score.add_argument("--trust-remote-code", action="store_true")
+    p_score.add_argument("--load-in-4bit", action="store_true")
+    p_score.add_argument("--load-in-8bit", action="store_true")
+    p_score.add_argument("--bnb-4bit-compute-dtype", default=None, choices=[None, "float16", "bfloat16", "float32"])
     p_score.add_argument("--output", required=True, help="Output JSONL")
     p_score.set_defaults(func=cmd_score_moves)
 
@@ -710,6 +722,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_cf.add_argument("--limit", type=int, default=None)
     p_cf.add_argument("--device-map", default="auto")
     p_cf.add_argument("--dtype", default=None, choices=[None, "auto", "float16", "bfloat16", "float32"])
+    p_cf.add_argument("--load-in-4bit", action="store_true")
+    p_cf.add_argument("--load-in-8bit", action="store_true")
+    p_cf.add_argument("--bnb-4bit-compute-dtype", default=None, choices=[None, "float16", "bfloat16", "float32"])
     p_cf.add_argument("--output", required=True, help="Output JSONL")
     p_cf.add_argument("--summary-output", default=None, help="Summary CSV output")
     p_cf.set_defaults(func=cmd_counterfactual_sensitivity)
@@ -721,6 +736,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_ll.add_argument("--limit", type=int, default=None)
     p_ll.add_argument("--device-map", default="auto")
     p_ll.add_argument("--dtype", default=None, choices=[None, "auto", "float16", "bfloat16", "float32"])
+    p_ll.add_argument("--load-in-4bit", action="store_true")
+    p_ll.add_argument("--load-in-8bit", action="store_true")
+    p_ll.add_argument("--bnb-4bit-compute-dtype", default=None, choices=[None, "float16", "bfloat16", "float32"])
     p_ll.add_argument("--output", required=True, help="Output JSONL")
     p_ll.set_defaults(func=cmd_logit_lens_bookmove)
 

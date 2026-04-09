@@ -22,6 +22,9 @@ class OpenModelRunner:
         device_map: str | None = "auto",
         dtype: str | None = None,
         trust_remote_code: bool = False,
+        load_in_4bit: bool = False,
+        load_in_8bit: bool = False,
+        bnb_4bit_compute_dtype: str | None = None,
     ) -> None:
         dtype_map = {
             None: None,
@@ -31,6 +34,8 @@ class OpenModelRunner:
             "float32": torch.float32,
         }
         torch_dtype = dtype_map.get(dtype, None)
+        if load_in_4bit and load_in_8bit:
+            raise ValueError("Only one of load_in_4bit/load_in_8bit can be True")
 
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True, trust_remote_code=trust_remote_code)
         if self.tokenizer.pad_token_id is None:
@@ -39,12 +44,30 @@ class OpenModelRunner:
             else:
                 self.tokenizer.add_special_tokens({"pad_token": "<|pad|>"})
 
+        quantization_config = None
+        if load_in_4bit or load_in_8bit:
+            from transformers import BitsAndBytesConfig
+
+            if bnb_4bit_compute_dtype is None:
+                compute_dtype = torch_dtype if torch_dtype in {torch.float16, torch.bfloat16} else torch.float16
+            else:
+                compute_dtype = dtype_map.get(bnb_4bit_compute_dtype, torch.float16)
+
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=load_in_4bit,
+                load_in_8bit=load_in_8bit,
+                bnb_4bit_compute_dtype=compute_dtype,
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4",
+            )
+
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             device_map=device_map,
             torch_dtype=torch_dtype,
             low_cpu_mem_usage=True,
             trust_remote_code=trust_remote_code,
+            quantization_config=quantization_config,
         )
         self.model.eval()
 

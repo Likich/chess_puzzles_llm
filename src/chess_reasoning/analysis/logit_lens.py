@@ -18,8 +18,18 @@ def logit_lens_bookmove(
     limit: Optional[int] = None,
     device_map: str | None = "auto",
     dtype: str | None = None,
+    load_in_4bit: bool = False,
+    load_in_8bit: bool = False,
+    bnb_4bit_compute_dtype: str | None = None,
 ) -> None:
-    runner = OpenModelRunner(model_name=model_name, device_map=device_map, dtype=dtype)
+    runner = OpenModelRunner(
+        model_name=model_name,
+        device_map=device_map,
+        dtype=dtype,
+        load_in_4bit=load_in_4bit,
+        load_in_8bit=load_in_8bit,
+        bnb_4bit_compute_dtype=bnb_4bit_compute_dtype,
+    )
     tokenizer = runner.tokenizer
     model = runner.model
 

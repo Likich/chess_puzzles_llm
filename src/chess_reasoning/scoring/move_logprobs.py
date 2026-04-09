@@ -171,12 +171,18 @@ def score_moves_from_file(
     device_map: str | None = "auto",
     dtype: str | None = None,
     trust_remote_code: bool = False,
+    load_in_4bit: bool = False,
+    load_in_8bit: bool = False,
+    bnb_4bit_compute_dtype: str | None = None,
 ) -> Iterator[dict]:
     runner = OpenModelRunner(
         model_name=model_name,
         device_map=device_map,
         dtype=dtype,
         trust_remote_code=trust_remote_code,
+        load_in_4bit=load_in_4bit,
+        load_in_8bit=load_in_8bit,
+        bnb_4bit_compute_dtype=bnb_4bit_compute_dtype,
     )
     generations_map = _load_generations(generations_path)
     stockfish_map = _load_stockfish(stockfish_path)
