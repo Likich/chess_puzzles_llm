@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import csv
 from pathlib import Path
 
 from chess_reasoning.ingestion.lichess import ingest_lichess
@@ -10,7 +11,7 @@ from chess_reasoning.ingestion.stackexchange import ingest_stackexchange_html
 from chess_reasoning.ingestion.annotations import iter_pgn_move_annotations
 from chess_reasoning.alignment.matcher import match_explanations
 from chess_reasoning.evaluation.annotation_scoring import score_annotations
-from chess_reasoning.utils.io import write_jsonl, read_jsonl, write_text
+from chess_reasoning.utils.io import write_jsonl, read_jsonl, write_text, read_text
 from chess_reasoning.utils.logging import get_logger
 from chess_reasoning.study.ratings import (
     build_rating_items,
@@ -29,6 +30,11 @@ from chess_reasoning.analysis.explanation_specificity import (
 )
 from chess_reasoning.analysis.reasoning_comparison import build_reasoning_table, write_reasoning_reports
 from chess_reasoning.analysis.recoverability import evaluate_recoverability
+from chess_reasoning.scoring.move_logprobs import score_moves_from_file
+from chess_reasoning.analysis.move_rank_analysis import aggregate_from_file, move_rank_report
+from chess_reasoning.analysis.explanation_alignment import build_alignment_table, summarize_alignment, write_csv as write_alignment_csv
+from chess_reasoning.analysis.counterfactual_sensitivity import run_counterfactuals, summarize_counterfactuals, write_csv as write_counterfactual_csv
+from chess_reasoning.analysis.logit_lens import logit_lens_bookmove
 from chess_reasoning.ingestion.sample import iter_filtered_puzzles, reservoir_sample
 from chess_reasoning.utils.io import append_jsonl
 from chess_reasoning.generation.llm_generate import generate_openai_rows
@@ -339,6 +345,88 @@ def cmd_reasoning_report(args: argparse.Namespace) -> None:
     logger.info("Wrote reasoning reports to %s", args.output_dir)
 
 
+def cmd_score_moves(args: argparse.Namespace) -> None:
+    prompt_template = None
+    if args.prompt:
+        prompt_template = read_text(args.prompt)
+    rows = score_moves_from_file(
+        puzzles_path=args.input,
+        model_name=args.model,
+        candidate_mode=args.candidate_mode,
+        prompt_style=args.prompt_style,
+        prompt_template=prompt_template,
+        generations_path=args.generations,
+        stockfish_path=args.stockfish,
+        distractors=args.distractors,
+        limit=args.limit,
+        device_map=args.device_map,
+        dtype=args.dtype,
+        trust_remote_code=args.trust_remote_code,
+    )
+    write_jsonl(args.output, rows)
+    logger.info("Wrote move logprobs to %s", args.output)
+
+
+def cmd_aggregate_move_ranks(args: argparse.Namespace) -> None:
+    aggregated = aggregate_from_file(args.input, args.output)
+    logger.info("Wrote move rank table to %s", args.output)
+
+
+def cmd_move_rank_report(args: argparse.Namespace) -> None:
+    if args.input.endswith(".csv"):
+        with Path(args.input).open("r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+    else:
+        rows = list(read_jsonl(args.input))
+    move_rank_report(rows, args.output_dir)
+    logger.info("Wrote move rank report to %s", args.output_dir)
+
+
+def cmd_explanation_alignment(args: argparse.Namespace) -> None:
+    rows = build_alignment_table(
+        generations_path=args.generations,
+        logprob_path=args.logprobs,
+        recoverability_path=args.recoverability,
+    )
+    write_alignment_csv(args.output, rows)
+    summary = summarize_alignment(rows)
+    if args.summary_output:
+        write_alignment_csv(args.summary_output, summary)
+    logger.info("Wrote explanation alignment table to %s", args.output)
+
+
+def cmd_counterfactual_sensitivity(args: argparse.Namespace) -> None:
+    run_counterfactuals(
+        puzzles_path=args.input,
+        model_name=args.model,
+        prompt_style=args.prompt_style,
+        output_path=args.output,
+        candidate_mode=args.candidate_mode,
+        limit=args.limit,
+        device_map=args.device_map,
+        dtype=args.dtype,
+    )
+    rows = list(read_jsonl(args.output))
+    summary = summarize_counterfactuals(rows)
+    if args.summary_output:
+        write_counterfactual_csv(args.summary_output, summary)
+    logger.info("Wrote counterfactual results to %s", args.output)
+
+
+def cmd_logit_lens_bookmove(args: argparse.Namespace) -> None:
+    logit_lens_bookmove(
+        puzzles_path=args.input,
+        model_name=args.model,
+        prompt_style=args.prompt_style,
+        output_path=args.output,
+        limit=args.limit,
+        device_map=args.device_map,
+        dtype=args.dtype,
+    )
+    logger.info("Wrote logit lens results to %s", args.output)
+
+
 def cmd_label_endgames(args: argparse.Namespace) -> None:
     rows = read_jsonl(args.input)
     labeled = (
@@ -579,6 +667,62 @@ def build_parser() -> argparse.ArgumentParser:
     p_rep.add_argument("--input", required=True, help="Recoverability JSONL")
     p_rep.add_argument("--output-dir", required=True, help="Output directory for CSVs")
     p_rep.set_defaults(func=cmd_reasoning_report)
+
+    p_score = sub.add_parser("score-moves", help="Score candidate moves with token logprobs")
+    p_score.add_argument("--input", required=True, help="Puzzles JSONL")
+    p_score.add_argument("--model", required=True, help="Open-weights model id")
+    p_score.add_argument("--candidate-mode", default="all_legal", choices=["all_legal", "filtered"])
+    p_score.add_argument("--prompt-style", default="scoring_only", choices=["scoring_only", "brief", "calc", "teaching"])
+    p_score.add_argument("--prompt", default=None, help="Optional prompt template file")
+    p_score.add_argument("--generations", default=None, help="LLM generations JSONL for generated move")
+    p_score.add_argument("--stockfish", default=None, help="Stockfish-evaluated JSONL for engine best move")
+    p_score.add_argument("--distractors", type=int, default=0)
+    p_score.add_argument("--limit", type=int, default=None)
+    p_score.add_argument("--device-map", default="auto")
+    p_score.add_argument("--dtype", default=None, choices=[None, "auto", "float16", "bfloat16", "float32"])
+    p_score.add_argument("--trust-remote-code", action="store_true")
+    p_score.add_argument("--output", required=True, help="Output JSONL")
+    p_score.set_defaults(func=cmd_score_moves)
+
+    p_agg = sub.add_parser("aggregate-move-ranks", help="Aggregate per-puzzle move ranks")
+    p_agg.add_argument("--input", required=True, help="Move logprobs JSONL")
+    p_agg.add_argument("--output", required=True, help="Output CSV")
+    p_agg.set_defaults(func=cmd_aggregate_move_ranks)
+
+    p_mrr = sub.add_parser("move-rank-report", help="Summarize move-rank metrics")
+    p_mrr.add_argument("--input", required=True, help="Move-rank JSONL or aggregated JSONL")
+    p_mrr.add_argument("--output-dir", required=True, help="Output directory")
+    p_mrr.set_defaults(func=cmd_move_rank_report)
+
+    p_align = sub.add_parser("explanation-alignment", help="Compute explanation alignment vs move ranks")
+    p_align.add_argument("--generations", required=True, help="LLM generations JSONL")
+    p_align.add_argument("--logprobs", required=True, help="Move logprobs JSONL")
+    p_align.add_argument("--recoverability", default=None, help="Recoverability JSONL")
+    p_align.add_argument("--output", required=True, help="Output CSV")
+    p_align.add_argument("--summary-output", default=None, help="Summary CSV output")
+    p_align.set_defaults(func=cmd_explanation_alignment)
+
+    p_cf = sub.add_parser("counterfactual-sensitivity", help="Run counterfactual sensitivity analysis")
+    p_cf.add_argument("--input", required=True, help="Puzzles JSONL")
+    p_cf.add_argument("--model", required=True, help="Open-weights model id")
+    p_cf.add_argument("--prompt-style", default="scoring_only", choices=["scoring_only", "brief", "calc", "teaching"])
+    p_cf.add_argument("--candidate-mode", default="all_legal", choices=["all_legal", "filtered"])
+    p_cf.add_argument("--limit", type=int, default=None)
+    p_cf.add_argument("--device-map", default="auto")
+    p_cf.add_argument("--dtype", default=None, choices=[None, "auto", "float16", "bfloat16", "float32"])
+    p_cf.add_argument("--output", required=True, help="Output JSONL")
+    p_cf.add_argument("--summary-output", default=None, help="Summary CSV output")
+    p_cf.set_defaults(func=cmd_counterfactual_sensitivity)
+
+    p_ll = sub.add_parser("logit-lens-bookmove", help="Compute logit-lens book move probabilities")
+    p_ll.add_argument("--input", required=True, help="Puzzles JSONL")
+    p_ll.add_argument("--model", required=True, help="Open-weights model id")
+    p_ll.add_argument("--prompt-style", default="scoring_only", choices=["scoring_only", "brief", "calc", "teaching"])
+    p_ll.add_argument("--limit", type=int, default=None)
+    p_ll.add_argument("--device-map", default="auto")
+    p_ll.add_argument("--dtype", default=None, choices=[None, "auto", "float16", "bfloat16", "float32"])
+    p_ll.add_argument("--output", required=True, help="Output JSONL")
+    p_ll.set_defaults(func=cmd_logit_lens_bookmove)
 
     p_end = sub.add_parser("label-endgames", help="Label Lichess puzzles by endgame section")
     p_end.add_argument("--input", required=True, help="Puzzles JSONL")
