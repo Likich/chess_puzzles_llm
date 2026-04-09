@@ -1,0 +1,5 @@
+category,count
+explanation decodes to generated but generated != book,49
+"generated != top-prob, top-prob = book",44
+explanation decodes to neither generated nor book,90
+generated = top-prob = book,7

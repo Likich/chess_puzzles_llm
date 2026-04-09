@@ -8,6 +8,8 @@ import chess
 
 from chess_reasoning.models.open_model_runner import OpenModelRunner
 from chess_reasoning.utils.io import read_jsonl
+from chess_reasoning.analysis.explanation_specificity import extract_explanation
+from chess_reasoning.evaluation.masking import mask_explanation
 
 
 SCORING_PROMPT = """Position (FEN): {fen}
@@ -45,11 +47,20 @@ def _load_stockfish(path: Optional[str]) -> dict[str, str]:
     return data
 
 
-def build_prompt(fen: str, prompt_style: str, prompt_template: Optional[str] = None) -> str:
+def build_prompt(
+    fen: str,
+    prompt_style: str,
+    prompt_template: Optional[str] = None,
+    explanation: Optional[str] = None,
+) -> str:
     if prompt_template:
+        if "{explanation}" in prompt_template:
+            return prompt_template.format(fen=fen, explanation=explanation or "")
         return prompt_template.format(fen=fen)
     if prompt_style == "scoring_only":
         return SCORING_PROMPT.format(fen=fen)
+    if explanation:
+        return f"Position (FEN): {fen}\nExplanation: {explanation}\nBest move in UCI:"
     template = STYLE_PROMPTS.get(prompt_style, SCORING_PROMPT)
     return template.format(fen=fen)
 
@@ -79,6 +90,21 @@ def _candidate_moves_filtered(
     return candidates
 
 
+def _load_explanations(path: Optional[str]) -> dict[tuple[str, str], str]:
+    if not path:
+        return {}
+    data = {}
+    for row in read_jsonl(path):
+        pid = row.get("puzzle_id")
+        prompt = row.get("prompt_condition") or "scoring_only"
+        if not pid:
+            continue
+        text = extract_explanation(row)
+        if text:
+            data[(pid, prompt)] = text
+    return data
+
+
 def iter_scored_moves(
     puzzles: Iterable[dict],
     runner: OpenModelRunner,
@@ -87,6 +113,8 @@ def iter_scored_moves(
     prompt_template: Optional[str],
     generations_map: dict[tuple[str, str], str],
     stockfish_map: dict[str, str],
+    explanations_map: dict[tuple[str, str], str] | None = None,
+    explanation_mask: str = "none",
     distractors: int = 0,
     limit: Optional[int] = None,
 ) -> Iterator[dict]:
@@ -116,7 +144,15 @@ def iter_scored_moves(
                 distractors=distractors,
             )
 
-        prompt = build_prompt(fen, prompt_style, prompt_template)
+        explanation_text = None
+        if explanations_map:
+            explanation_text = explanations_map.get((pid, prompt_style))
+            if not explanation_text and prompt_style != "scoring_only":
+                explanation_text = explanations_map.get((pid, "scoring_only"))
+        if explanation_text and explanation_mask != "none":
+            explanation_text = mask_explanation(explanation_text, level=explanation_mask)
+
+        prompt = build_prompt(fen, prompt_style, prompt_template, explanation=explanation_text)
 
         scored = []
         for move in candidates:
@@ -153,6 +189,7 @@ def iter_scored_moves(
                 "logprob_avg_token": score.logprob_avg_token,
                 "token_count": score.token_count,
                 "rank_among_candidates": ranks.get(move),
+                "explanation_mask": explanation_mask,
             }
 
         count += 1
@@ -166,6 +203,8 @@ def score_moves_from_file(
     prompt_template: Optional[str],
     generations_path: Optional[str],
     stockfish_path: Optional[str],
+    explanations_path: Optional[str] = None,
+    explanation_mask: str = "none",
     distractors: int = 0,
     limit: Optional[int] = None,
     device_map: str | None = "auto",
@@ -186,6 +225,7 @@ def score_moves_from_file(
     )
     generations_map = _load_generations(generations_path)
     stockfish_map = _load_stockfish(stockfish_path)
+    explanations_map = _load_explanations(explanations_path)
     puzzles = read_jsonl(puzzles_path)
     yield from iter_scored_moves(
         puzzles=puzzles,
@@ -195,6 +235,8 @@ def score_moves_from_file(
         prompt_template=prompt_template,
         generations_map=generations_map,
         stockfish_map=stockfish_map,
+        explanations_map=explanations_map,
+        explanation_mask=explanation_mask,
         distractors=distractors,
         limit=limit,
     )

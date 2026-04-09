@@ -1,0 +1,7 @@
+metric,mean_delta_original_vs_variant
+mean_delta_book_rank,
+mean_explanation_similarity,0.20293373068217152
+generated_move_changed,0.9591836734693877
+topprob_move_changed,1.0
+recoverability_predicted_move_changed,0.8163265306122449
+recoverability_match_changed,0.0

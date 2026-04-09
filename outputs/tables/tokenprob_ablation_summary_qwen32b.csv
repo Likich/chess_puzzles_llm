@@ -1,0 +1,2 @@
+prompt_style,n,top1_book_rate,top3_book_rate,top5_book_rate,mean_book_rank,median_book_rank,mean_margin_book_vs_top,mean_generated_equals_topprob
+scoring_only,200,0.245,0.555,0.78,3.455,3.0,-2.0576116943359377,0.0

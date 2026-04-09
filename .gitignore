@@ -22,6 +22,7 @@ outputs/logs/
 
 # Local secrets
 .env
+*.pem
 
 # Paper (LaTeX)
 paper/

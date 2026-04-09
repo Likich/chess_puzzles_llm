@@ -19,7 +19,7 @@ def _load_generations(path: str) -> dict[tuple[str, str], dict]:
     return data
 
 
-def _topprob_by_prompt(logprob_path: str) -> dict[tuple[str, str], str]:
+def _topprob_by_prompt(logprob_path: str) -> dict[tuple[str, str], dict]:
     grouped: dict[tuple[str, str], list[dict]] = defaultdict(list)
     for row in read_jsonl(logprob_path):
         pid = row.get("puzzle_id")
@@ -31,7 +31,10 @@ def _topprob_by_prompt(logprob_path: str) -> dict[tuple[str, str], str]:
     topprob = {}
     for key, items in grouped.items():
         best = max(items, key=lambda r: r.get("logprob_total", float("-inf")))
-        topprob[key] = best.get("candidate_move")
+        topprob[key] = {
+            "topprob_move": best.get("candidate_move"),
+            "book_move": best.get("book_move") or items[0].get("book_move"),
+        }
     return topprob
 
 
@@ -54,14 +57,19 @@ def build_alignment_table(
     recoverability_path: Optional[str],
 ) -> list[dict]:
     generations = _load_generations(generations_path)
-    topprob = _topprob_by_prompt(logprob_path)
+    topprob_map = _topprob_by_prompt(logprob_path)
     preds = _recoverability_predictions(recoverability_path)
 
     rows = []
     for (pid, prompt), gen in generations.items():
         book_move = gen.get("book_move") or gen.get("best_move")
         generated_move = gen.get("parsed_move") or gen.get("move_uci") or gen.get("chosen_move")
-        topprob_move = topprob.get((pid, prompt))
+        topprob_entry = topprob_map.get((pid, prompt))
+        if topprob_entry is None:
+            topprob_entry = topprob_map.get((pid, "scoring_only"))
+        topprob_move = topprob_entry.get("topprob_move") if topprob_entry else None
+        if not book_move and topprob_entry:
+            book_move = topprob_entry.get("book_move")
         predicted_move = preds.get((pid, prompt))
 
         rows.append(

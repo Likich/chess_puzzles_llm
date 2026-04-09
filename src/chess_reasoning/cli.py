@@ -358,6 +358,8 @@ def cmd_score_moves(args: argparse.Namespace) -> None:
         prompt_template=prompt_template,
         generations_path=args.generations,
         stockfish_path=args.stockfish,
+        explanations_path=args.explanations,
+        explanation_mask=args.explanation_mask,
         distractors=args.distractors,
         limit=args.limit,
         device_map=args.device_map,
@@ -700,6 +702,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_score.add_argument("--prompt", default=None, help="Optional prompt template file")
     p_score.add_argument("--generations", default=None, help="LLM generations JSONL for generated move")
     p_score.add_argument("--stockfish", default=None, help="Stockfish-evaluated JSONL for engine best move")
+    p_score.add_argument("--explanations", default=None, help="LLM generations JSONL for explanations")
+    p_score.add_argument("--explanation-mask", default="none", choices=["none", "light", "strict"])
     p_score.add_argument("--distractors", type=int, default=0)
     p_score.add_argument("--limit", type=int, default=None)
     p_score.add_argument("--device-map", default="auto")
