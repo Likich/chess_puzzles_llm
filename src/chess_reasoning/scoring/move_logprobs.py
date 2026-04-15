@@ -52,11 +52,15 @@ def build_prompt(
     prompt_style: str,
     prompt_template: Optional[str] = None,
     explanation: Optional[str] = None,
+    puzzle: Optional[dict] = None,
 ) -> str:
     if prompt_template:
+        values = {"fen": fen, "explanation": explanation or ""}
+        if puzzle:
+            values.update({str(k): "" if v is None else str(v) for k, v in puzzle.items()})
         if "{explanation}" in prompt_template:
-            return prompt_template.format(fen=fen, explanation=explanation or "")
-        return prompt_template.format(fen=fen)
+            return prompt_template.format(**values)
+        return prompt_template.format(**values)
     if prompt_style == "scoring_only":
         return SCORING_PROMPT.format(fen=fen)
     if explanation:
@@ -74,10 +78,12 @@ def _candidate_moves_filtered(
     book_move: Optional[str],
     generated_move: Optional[str],
     engine_move: Optional[str],
+    proposed_move: Optional[str] = None,
+    wrong_move: Optional[str] = None,
     distractors: int = 0,
 ) -> list[str]:
     candidates: list[str] = []
-    for move in (book_move, generated_move, engine_move):
+    for move in (book_move, proposed_move, wrong_move, generated_move, engine_move):
         if move and move not in candidates:
             candidates.append(move)
     if distractors > 0:
@@ -124,7 +130,9 @@ def iter_scored_moves(
             break
         pid = puzzle.get("puzzle_id")
         fen = puzzle.get("fen")
-        book_move = puzzle.get("best_move")
+        book_move = puzzle.get("best_move") or puzzle.get("reference_move") or puzzle.get("book_move")
+        proposed_move = puzzle.get("proposed_move")
+        wrong_move = puzzle.get("wrong_move")
         if not pid or not fen:
             continue
         board = chess.Board(fen)
@@ -141,6 +149,8 @@ def iter_scored_moves(
                 book_move=book_move,
                 generated_move=generated_move,
                 engine_move=engine_move,
+                proposed_move=proposed_move,
+                wrong_move=wrong_move,
                 distractors=distractors,
             )
 
@@ -152,7 +162,7 @@ def iter_scored_moves(
         if explanation_text and explanation_mask != "none":
             explanation_text = mask_explanation(explanation_text, level=explanation_mask)
 
-        prompt = build_prompt(fen, prompt_style, prompt_template, explanation=explanation_text)
+        prompt = build_prompt(fen, prompt_style, prompt_template, explanation=explanation_text, puzzle=puzzle)
 
         scored = []
         for move in candidates:
@@ -166,6 +176,10 @@ def iter_scored_moves(
             candidate_type = "legal"
             if book_move and move == book_move:
                 candidate_type = "book"
+            elif proposed_move and move == proposed_move:
+                candidate_type = "proposed"
+            elif wrong_move and move == wrong_move:
+                candidate_type = "wrong"
             elif generated_move and move == generated_move:
                 candidate_type = "generated"
             elif engine_move and move == engine_move:
@@ -182,6 +196,10 @@ def iter_scored_moves(
                 "fen": fen,
                 "book_move": book_move,
                 "generated_move": generated_move,
+                "proposed_move": proposed_move,
+                "wrong_move": wrong_move,
+                "proposed_move_condition": puzzle.get("proposed_move_condition"),
+                "expected_verdict": puzzle.get("expected_verdict"),
                 "candidate_move": move,
                 "candidate_type": candidate_type,
                 "is_legal": legal,

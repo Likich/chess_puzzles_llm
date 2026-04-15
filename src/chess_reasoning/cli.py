@@ -36,6 +36,14 @@ from chess_reasoning.analysis.explanation_alignment import build_alignment_table
 from chess_reasoning.analysis.counterfactual_sensitivity import run_counterfactuals, summarize_counterfactuals, write_csv as write_counterfactual_csv
 from chess_reasoning.analysis.logit_lens import logit_lens_bookmove
 from chess_reasoning.analysis.prob_recoverability import compute_prob_recoverability
+from chess_reasoning.analysis.wrong_move_rationalization import (
+    generate_wrong_move_hf_rows,
+    generate_wrong_move_openai_rows,
+    load_wrong_move_rows,
+    sample_proposed_move_pair_items,
+    sample_wrong_move_items,
+    write_wrong_move_report,
+)
 from chess_reasoning.ingestion.sample import iter_filtered_puzzles, reservoir_sample
 from chess_reasoning.utils.io import append_jsonl
 from chess_reasoning.generation.llm_generate import generate_openai_rows
@@ -453,6 +461,103 @@ def cmd_prob_recoverability(args: argparse.Namespace) -> None:
     logger.info("Wrote probability-recoverability tables to %s", args.output_dir)
 
 
+def cmd_sample_wrong_moves(args: argparse.Namespace) -> None:
+    puzzles = iter_filtered_puzzles(
+        input_path=args.puzzles,
+        min_rating=args.min_rating,
+        max_rating=args.max_rating,
+        split=args.split,
+    )
+    rows = sample_wrong_move_items(
+        puzzles=puzzles,
+        strategy=args.strategy,
+        seed=args.seed,
+        limit=args.limit,
+    )
+    write_jsonl(args.output, rows)
+    logger.info("Wrote wrong-move items to %s", args.output)
+
+
+def cmd_sample_proposed_move_pairs(args: argparse.Namespace) -> None:
+    puzzles = iter_filtered_puzzles(
+        input_path=args.puzzles,
+        min_rating=args.min_rating,
+        max_rating=args.max_rating,
+        split=args.split,
+    )
+    rows = sample_proposed_move_pair_items(
+        puzzles=puzzles,
+        strategy=args.strategy,
+        seed=args.seed,
+        limit=args.limit,
+    )
+    write_jsonl(args.output, rows)
+    logger.info("Wrote proposed-move pair items to %s", args.output)
+
+
+def cmd_generate_wrong_move_openai(args: argparse.Namespace) -> None:
+    prompt_template = load_prompt(args.prompt)
+    prompt_condition = args.prompt_condition or Path(args.prompt).stem
+    rows = generate_wrong_move_openai_rows(
+        items=load_wrong_move_rows(args.items),
+        prompt_template=prompt_template,
+        model=args.model,
+        temperature=args.temperature,
+        max_output_tokens=args.max_output_tokens,
+        prompt_condition=prompt_condition,
+        sleep_s=args.sleep_s,
+        max_retries=args.max_retries,
+        limit=args.limit,
+        api_type=args.api_type,
+        base_url=args.base_url,
+        api_key_env=args.api_key_env,
+        reasoning_effort=args.reasoning_effort,
+        reasoning_format=args.reasoning_format,
+        include_reasoning=args.include_reasoning,
+    )
+    if args.append:
+        append_jsonl(args.output, rows)
+    else:
+        write_jsonl(args.output, rows)
+    logger.info("Wrote wrong-move rationalization outputs to %s", args.output)
+
+
+def cmd_generate_wrong_move_hf(args: argparse.Namespace) -> None:
+    prompt_template = load_prompt(args.prompt)
+    prompt_condition = args.prompt_condition or Path(args.prompt).stem
+    rows = generate_wrong_move_hf_rows(
+        items=load_wrong_move_rows(args.items),
+        prompt_template=prompt_template,
+        model_name=args.model,
+        temperature=args.temperature,
+        top_p=args.top_p,
+        max_output_tokens=args.max_output_tokens,
+        prompt_condition=prompt_condition,
+        limit=args.limit,
+        device_map=args.device_map,
+        dtype=args.dtype,
+        trust_remote_code=args.trust_remote_code,
+        load_in_4bit=args.load_in_4bit,
+        load_in_8bit=args.load_in_8bit,
+        bnb_4bit_compute_dtype=args.bnb_4bit_compute_dtype,
+    )
+    if args.append:
+        append_jsonl(args.output, rows)
+    else:
+        write_jsonl(args.output, rows)
+    logger.info("Wrote HF wrong-move rationalization outputs to %s", args.output)
+
+
+def cmd_wrong_move_report(args: argparse.Namespace) -> None:
+    rows = list(load_wrong_move_rows(args.input))
+    write_wrong_move_report(
+        rows=rows,
+        summary_output=args.summary_output,
+        section_output=args.section_output,
+    )
+    logger.info("Wrote wrong-move rationalization report to %s", args.summary_output)
+
+
 def cmd_label_endgames(args: argparse.Namespace) -> None:
     rows = read_jsonl(args.input)
     labeled = (
@@ -772,6 +877,88 @@ def build_parser() -> argparse.ArgumentParser:
     p_pr.add_argument("--margin-bucket-output", required=True, help="Margin bucket summary CSV")
     p_pr.add_argument("--output-dir", default="outputs/tables", help="Output directory label for logs")
     p_pr.set_defaults(func=cmd_prob_recoverability)
+
+    p_wrong_sample = sub.add_parser(
+        "sample-wrong-moves",
+        help="Sample legal but non-reference moves for rationalization tests",
+    )
+    p_wrong_sample.add_argument("--puzzles", required=True, help="Puzzles JSONL")
+    p_wrong_sample.add_argument("--output", required=True, help="Output wrong-move items JSONL")
+    p_wrong_sample.add_argument("--strategy", default="random_legal", choices=["random_legal", "first_legal"])
+    p_wrong_sample.add_argument("--seed", type=int, default=42)
+    p_wrong_sample.add_argument("--limit", type=int, default=None)
+    p_wrong_sample.add_argument("--min-rating", type=int, default=None)
+    p_wrong_sample.add_argument("--max-rating", type=int, default=None)
+    p_wrong_sample.add_argument("--split", default=None, choices=["train", "dev", "test"])
+    p_wrong_sample.set_defaults(func=cmd_sample_wrong_moves)
+
+    p_prop_sample = sub.add_parser(
+        "sample-proposed-move-pairs",
+        help="Sample paired correct/wrong proposed moves for acceptance tests",
+    )
+    p_prop_sample.add_argument("--puzzles", required=True, help="Puzzles JSONL")
+    p_prop_sample.add_argument("--output", required=True, help="Output proposed-move items JSONL")
+    p_prop_sample.add_argument("--strategy", default="random_legal", choices=["random_legal", "first_legal"])
+    p_prop_sample.add_argument("--seed", type=int, default=42)
+    p_prop_sample.add_argument("--limit", type=int, default=None, help="Max source puzzles before pairing")
+    p_prop_sample.add_argument("--min-rating", type=int, default=None)
+    p_prop_sample.add_argument("--max-rating", type=int, default=None)
+    p_prop_sample.add_argument("--split", default=None, choices=["train", "dev", "test"])
+    p_prop_sample.set_defaults(func=cmd_sample_proposed_move_pairs)
+
+    p_wrong_gen = sub.add_parser(
+        "generate-wrong-move-openai",
+        help="Ask an OpenAI-compatible model to accept or reject proposed wrong moves",
+    )
+    p_wrong_gen.add_argument("--items", required=True, help="Wrong-move items JSONL")
+    p_wrong_gen.add_argument("--prompt", required=True, help="Prompt template file")
+    p_wrong_gen.add_argument("--output", required=True, help="Output JSONL")
+    p_wrong_gen.add_argument("--model", required=True, help="Model name")
+    p_wrong_gen.add_argument("--temperature", type=float, default=0.0)
+    p_wrong_gen.add_argument("--max-output-tokens", type=int, default=256)
+    p_wrong_gen.add_argument("--prompt-condition", default=None, help="Label for prompt condition")
+    p_wrong_gen.add_argument("--api-type", default="responses", choices=["responses", "chat"])
+    p_wrong_gen.add_argument("--base-url", default=None, help="Override API base URL")
+    p_wrong_gen.add_argument("--api-key-env", default="OPENAI_API_KEY", help="API key env var name")
+    p_wrong_gen.add_argument("--reasoning-effort", default=None, help="Reasoning effort (model-specific)")
+    p_wrong_gen.add_argument("--reasoning-format", default=None, help="Reasoning format: hidden, raw, parsed")
+    p_wrong_gen.add_argument("--include-reasoning", action="store_true", default=None, help="Include reasoning field")
+    p_wrong_gen.add_argument("--sleep-s", type=float, default=0.0)
+    p_wrong_gen.add_argument("--max-retries", type=int, default=3)
+    p_wrong_gen.add_argument("--limit", type=int, default=None)
+    p_wrong_gen.add_argument("--append", action="store_true")
+    p_wrong_gen.set_defaults(func=cmd_generate_wrong_move_openai)
+
+    p_wrong_hf = sub.add_parser(
+        "generate-wrong-move-hf",
+        help="Ask a Hugging Face open model to accept or reject proposed moves",
+    )
+    p_wrong_hf.add_argument("--items", required=True, help="Wrong/proposed-move items JSONL")
+    p_wrong_hf.add_argument("--prompt", required=True, help="Prompt template file")
+    p_wrong_hf.add_argument("--output", required=True, help="Output JSONL")
+    p_wrong_hf.add_argument("--model", required=True, help="HF model id")
+    p_wrong_hf.add_argument("--temperature", type=float, default=0.0)
+    p_wrong_hf.add_argument("--top-p", type=float, default=1.0)
+    p_wrong_hf.add_argument("--max-output-tokens", type=int, default=256)
+    p_wrong_hf.add_argument("--prompt-condition", default=None, help="Label for prompt condition")
+    p_wrong_hf.add_argument("--limit", type=int, default=None)
+    p_wrong_hf.add_argument("--append", action="store_true")
+    p_wrong_hf.add_argument("--device-map", default="auto")
+    p_wrong_hf.add_argument("--dtype", default=None, choices=[None, "auto", "float16", "bfloat16", "float32"])
+    p_wrong_hf.add_argument("--trust-remote-code", action="store_true")
+    p_wrong_hf.add_argument("--load-in-4bit", action="store_true")
+    p_wrong_hf.add_argument("--load-in-8bit", action="store_true")
+    p_wrong_hf.add_argument("--bnb-4bit-compute-dtype", default=None, choices=[None, "float16", "bfloat16", "float32"])
+    p_wrong_hf.set_defaults(func=cmd_generate_wrong_move_hf)
+
+    p_wrong_report = sub.add_parser(
+        "wrong-move-report",
+        help="Summarize wrong-move rationalization outputs",
+    )
+    p_wrong_report.add_argument("--input", required=True, help="Wrong-move rationalization JSONL")
+    p_wrong_report.add_argument("--summary-output", required=True, help="Summary CSV output")
+    p_wrong_report.add_argument("--section-output", default=None, help="Optional by-section CSV output")
+    p_wrong_report.set_defaults(func=cmd_wrong_move_report)
 
     p_end = sub.add_parser("label-endgames", help="Label Lichess puzzles by endgame section")
     p_end.add_argument("--input", required=True, help="Puzzles JSONL")

@@ -1,0 +1,5 @@
+Position (FEN): {fen}
+Proposed solution move: {proposed_move} ({proposed_move_san})
+
+The proposed move may be correct or incorrect. What is the best move in UCI?
+Best move in UCI:
